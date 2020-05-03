@@ -19,7 +19,8 @@ class DataManager {
         course = CourseInfo(title = "Java Fundamentals",courseId = "java_lang")
         courses.set(course.courseId, course)
 
-        course = CourseInfo("jave_core","Android Programming with Intents")
+        course = CourseInfo("java_core","Android Programming with Intents")
         courses.set(course.courseId, course)
+
     }
 }
