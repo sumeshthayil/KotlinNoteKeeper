@@ -34,6 +34,8 @@ class MainActivity : AppCompatActivity() {
         val note = DataManager.notes[notePosition]
         textNoteTitle.setText(note.title)
         textNoteText.setText(note.text)
+
+        spinnerCourses.setSelection(DataManager.courses.values.indexOf(note.course))
     }
 
 
