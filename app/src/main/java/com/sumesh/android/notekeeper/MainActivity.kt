@@ -76,5 +76,11 @@ class MainActivity : AppCompatActivity() {
         return super.onPrepareOptionsMenu(menu)
     }
 
-
+    override fun onPause() {
+        super.onPause()
+//        val note = DataManager.notes[notePosition]
+        DataManager.notes[notePosition].title = textNoteTitle.text.toString()
+        DataManager.notes[notePosition].text = textNoteText.text.toString()
+        DataManager.notes[notePosition].course = spinnerCourses.selectedItem as CourseInfo
+    }
 }
