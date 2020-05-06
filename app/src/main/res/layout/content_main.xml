@@ -15,6 +15,7 @@
         android:gravity="start|top"
         android:hint="Note Text"
         android:inputType="textMultiLine"
+        android:textColor="@color/design_default_color_error"
         app:layout_constraintEnd_toEndOf="@+id/spinnerCourses"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="@+id/spinnerCourses"
@@ -40,6 +41,7 @@
         android:gravity="start|top"
         android:hint="Note Title"
         android:inputType="textMultiLine"
+        android:textColor="@android:color/holo_green_light"
         app:layout_constraintEnd_toEndOf="@+id/spinnerCourses"
         app:layout_constraintStart_toStartOf="@+id/spinnerCourses"
         app:layout_constraintTop_toBottomOf="@+id/spinnerCourses" />

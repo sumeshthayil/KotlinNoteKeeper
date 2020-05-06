@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ArrayAdapter
+import com.google.android.material.snackbar.Snackbar
 
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -25,23 +26,21 @@ class MainActivity : AppCompatActivity() {
 
         spinnerCourses.adapter = adapterCourses
 
-        notePosition = intent.getIntExtra(EXTRA_NOTE_POSITION, POSITION_NOT_SET)
+        notePosition = savedInstanceState?.getInt(NOTE_POSITION, POSITION_NOT_SET) ?:
+                intent.getIntExtra(NOTE_POSITION, POSITION_NOT_SET)
 
-        if(notePosition != POSITION_NOT_SET) displayNote()
-        else{
+        if(notePosition != POSITION_NOT_SET)
+            displayNote()
+        else {
             DataManager.notes.add(NoteInfo())
             notePosition = DataManager.notes.lastIndex
         }
     }
 
-    private fun displayNote() {
-        val note = DataManager.notes[notePosition]
-        textNoteTitle.setText(note.title)
-        textNoteText.setText(note.text)
-
-        spinnerCourses.setSelection(DataManager.courses.values.indexOf(note.course))
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(NOTE_POSITION, notePosition)
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -56,12 +55,35 @@ class MainActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_settings -> true
             R.id.action_next -> {
-                moveNext()
+                if(notePosition < DataManager.notes.lastIndex) {
+                    moveNext()
+                } else {
+                    val message = "No more notes"
+                    showMessage(message)
+                }
                 true
             }
             else -> super.onOptionsItemSelected(item)
         }
     }
+    private fun displayNote() {
+        if(notePosition > DataManager.notes.lastIndex) {
+            showMessage("Note not found")
+            return
+        }
+
+        val note = DataManager.notes[notePosition]
+        textNoteTitle.setText(note.title)
+        textNoteText.setText(note.text)
+
+        val coursePosition = DataManager.courses.values.indexOf(note.course)
+        spinnerCourses.setSelection(coursePosition)
+    }
+
+    private fun showMessage(message: String) {
+        Snackbar.make(textNoteTitle, message, Snackbar.LENGTH_LONG).show()
+    }
+
 
     private fun moveNext() {
         ++notePosition
@@ -74,7 +96,6 @@ class MainActivity : AppCompatActivity() {
             val menuItem = menu?.findItem(R.id.action_next)
             if (menuItem!= null){
                 menuItem.icon = getDrawable(R.drawable.ic_block_white_24dp)
-                menuItem.isEnabled = false
             }
         }
         return super.onPrepareOptionsMenu(menu)
