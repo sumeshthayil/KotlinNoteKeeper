@@ -10,6 +10,10 @@ object DataManager {
         initializeNotes()
     }
 
+    fun addNote(courseInfo: CourseInfo, title: String, text: String): Int{
+        return -1
+    }
+
     private fun initializeCourses() {
         var course = CourseInfo("android_intents", "Android Programming with Intents")
         courses.set(course.courseId, course)
