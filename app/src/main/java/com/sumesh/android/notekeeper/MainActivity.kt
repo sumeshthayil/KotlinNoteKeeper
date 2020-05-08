@@ -1,6 +1,7 @@
 package com.sumesh.android.notekeeper
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
@@ -12,6 +13,7 @@ import kotlinx.android.synthetic.main.content_main.*
 
 
 class MainActivity : AppCompatActivity() {
+    private val tag = "MainActivity"
     private var notePosition = POSITION_NOT_SET
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,9 +34,14 @@ class MainActivity : AppCompatActivity() {
         if(notePosition != POSITION_NOT_SET)
             displayNote()
         else {
-            DataManager.notes.add(NoteInfo())
-            notePosition = DataManager.notes.lastIndex
+            createNewNote()
         }
+        Log.d(tag,"onCreate" )
+    }
+
+    private fun createNewNote() {
+        DataManager.notes.add(NoteInfo())
+        notePosition = DataManager.notes.lastIndex
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -69,9 +76,10 @@ class MainActivity : AppCompatActivity() {
     private fun displayNote() {
         if(notePosition > DataManager.notes.lastIndex) {
             showMessage("Note not found")
+            Log.e(tag, "Invalid note position, max allowed is ${DataManager.notes.lastIndex}")
             return
         }
-
+        Log.i(tag, "Displaying note at position $notePosition")
         val note = DataManager.notes[notePosition]
         textNoteTitle.setText(note.title)
         textNoteText.setText(note.text)
@@ -104,6 +112,7 @@ class MainActivity : AppCompatActivity() {
     override fun onPause() {
         super.onPause()
         saveNote()
+        Log.d(tag,"onPause" )
     }
 
     private fun saveNote() {
