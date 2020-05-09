@@ -11,8 +11,7 @@ import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
-
-class MainActivity : AppCompatActivity() {
+class NoteActivity : AppCompatActivity() {
     private val tag = this::class.simpleName
     private var notePosition = POSITION_NOT_SET
 
@@ -76,10 +75,10 @@ class MainActivity : AppCompatActivity() {
     private fun displayNote() {
         if(notePosition > DataManager.notes.lastIndex) {
             showMessage("Note not found")
-            Log.e(tag, "Invalid note position, max allowed is ${DataManager.notes.lastIndex}")
+            Log.e(tag, "Invalid note position $notePosition, max valid position ${DataManager.notes.lastIndex}")
             return
         }
-        Log.i(tag, "Displaying note at position $notePosition")
+        Log.i(tag, "Displaying note for position $notePosition")
         val note = DataManager.notes[notePosition]
         textNoteTitle.setText(note.title)
         textNoteText.setText(note.text)
