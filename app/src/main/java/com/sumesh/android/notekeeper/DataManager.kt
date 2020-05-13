@@ -10,16 +10,17 @@ object DataManager {
         initializeNotes()
     }
 
-    fun addNote(courseInfo: CourseInfo, title: String, text: String): Int{
-        DataManager.notes.add(NoteInfo(courseInfo, title, text ))
-        return DataManager.notes.lastIndex
+    fun addNote(course: CourseInfo, noteTitle: String, noteText: String): Int {
+        val note = NoteInfo(course, noteTitle, noteText)
+        notes.add(note)
+        return notes.lastIndex
     }
 
-    fun findNote(course: CourseInfo, title: String, text: String) : NoteInfo? {
+    fun findNote(course: CourseInfo, noteTitle: String, noteText: String) : NoteInfo? {
         for (note in notes)
-            if(note.course == course &&
-                    note.title == title &&
-                    note.text == text)
+            if (course == note.course &&
+                    noteTitle == note.title &&
+                    noteText == note.text)
                 return note
         return null
     }

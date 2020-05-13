@@ -22,9 +22,6 @@ class   NoteListActivity : AppCompatActivity() {
             startActivity(activityIntent)
         }
 
-        fab.setOnClickListener {
-            startActivity(Intent(this, NoteActivity::class.java))
-        }
         listItems.layoutManager = LinearLayoutManager(this)
         listItems.adapter = NoteRecyclerAdapter(this, DataManager.notes)
     }
