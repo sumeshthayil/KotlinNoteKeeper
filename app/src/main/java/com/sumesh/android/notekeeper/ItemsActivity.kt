@@ -103,17 +103,23 @@ class ItemsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                     displayCourses()
                 }
                 R.id.nav_share -> {
-                    handleSelection("Share")
+                    handleSelection(R.string.nav_share_message)
                 }
                 R.id.nav_send -> {
-                    handleSelection("Send")
+                    handleSelection(R.string.nav_send_message)
                 }
+                R.id.nav_how_many->{
+                    val message = getString(R.string.nav_how_many_massage_format,
+                    DataManager.notes.size, DataManager.courses.size)
+                    Snackbar.make(listItems, message, Snackbar.LENGTH_LONG).show()
+                }
+
             }
             drawer_layout.closeDrawer(GravityCompat.START)
             return true
         }
 
-        private fun handleSelection(message: String) {
-            Snackbar.make(listItems, message, Snackbar.LENGTH_LONG).show()
+        private fun handleSelection(stringId: Int) {
+            Snackbar.make(listItems, stringId, Snackbar.LENGTH_LONG).show()
         }
     }
