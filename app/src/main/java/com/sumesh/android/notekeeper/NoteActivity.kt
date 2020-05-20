@@ -39,8 +39,7 @@ class NoteActivity : AppCompatActivity() {
     }
 
     private fun createNewNote() {
-        DataManager.notes.add(NoteInfo())
-        notePosition = DataManager.notes.lastIndex
+        notePosition = DataManager.addNote(NoteInfo())
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -61,11 +60,11 @@ class NoteActivity : AppCompatActivity() {
         return when (item.itemId) {
             R.id.action_settings -> true
             R.id.action_next -> {
-                if(notePosition < DataManager.notes.lastIndex) {
-                    moveNext()
-                } else {
+                if(DataManager.isLastNoteId(notePosition)) {
                     val message = "No more notes"
                     showMessage(message)
+                } else {
+                    moveNext()
                 }
                 true
             }
@@ -73,13 +72,8 @@ class NoteActivity : AppCompatActivity() {
         }
     }
     private fun displayNote() {
-        if(notePosition > DataManager.notes.lastIndex) {
-            showMessage("Note not found")
-            Log.e(tag, "Invalid note position $notePosition, max valid position ${DataManager.notes.lastIndex}")
-            return
-        }
         Log.i(tag, "Displaying note for position $notePosition")
-        val note = DataManager.notes[notePosition]
+        val note = DataManager.loadNote(notePosition)
         textNoteTitle.setText(note.title)
         textNoteText.setText(note.text)
 
@@ -99,7 +93,7 @@ class NoteActivity : AppCompatActivity() {
     }
 
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
-        if(notePosition >= DataManager.notes.lastIndex){
+        if(DataManager.isLastNoteId(notePosition)) {
             val menuItem = menu?.findItem(R.id.action_next)
             if (menuItem!= null){
                 menuItem.icon = getDrawable(R.drawable.ic_block_white_24dp)
@@ -115,7 +109,7 @@ class NoteActivity : AppCompatActivity() {
     }
 
     private fun saveNote() {
-        val note = DataManager.notes[notePosition]
+        val note = DataManager.loadNote(notePosition)
         note.title = textNoteTitle.text.toString()
         note.text = textNoteText.text.toString()
         note.course = spinnerCourses.selectedItem as CourseInfo

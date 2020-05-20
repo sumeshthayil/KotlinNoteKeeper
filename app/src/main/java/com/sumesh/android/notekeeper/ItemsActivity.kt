@@ -16,31 +16,43 @@ import com.google.android.material.snackbar.Snackbar
 import com.jwhh.notekeeper.CourseRecyclerAdapter
 import kotlinx.android.synthetic.main.activity_items.*
 import kotlinx.android.synthetic.main.content_items.*
+import kotlinx.android.synthetic.main.app_bar_items.*
 
-class ItemsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+class ItemsActivity : AppCompatActivity(),
+        NavigationView.OnNavigationItemSelectedListener,
+        NoteRecyclerAdapter.OnNoteSelectedListener {
 
-    private val mLinearLayoutManager by lazy {
-        LinearLayoutManager(this)}
+    private val maxRecentlyViewedNotes = 5
+    val recentlyViewedNotes = ArrayList<NoteInfo>(maxRecentlyViewedNotes)
 
-    private val mNoteRecyclerAdapter by lazy {
-        NoteRecyclerAdapter(this, DataManager.notes) }
+    private val noteLayoutManager by lazy {
+        LinearLayoutManager(this)
+    }
+    private val noteRecyclerAdapter by lazy {
+        val adapter = NoteRecyclerAdapter(this, DataManager.loadNotes())
+        adapter.setOnSelectedListener(this)
+        adapter
+    }
     
-    private val mGridLayoutManager by lazy { 
-        GridLayoutManager(this, resources.getInteger(R.integer.course_grid_span))
+    private val courseLayoutManager by lazy {
+        GridLayoutManager(this, 2)
     }
     
     private val mCourseRecyclerAdapter by lazy { 
         CourseRecyclerAdapter(this,DataManager.courses.values.toList())
     }
     
+    private val recentlyViewedNoteRecyclerAdapter by lazy {
+        val adapter = NoteRecyclerAdapter(this, recentlyViewedNotes)
+        adapter.setOnSelectedListener(this)
+        adapter
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
             setContentView(R.layout.activity_items)
-            val toolbar: Toolbar = findViewById(R.id.toolbar)
             setSupportActionBar(toolbar)
 
-            val fab: FloatingActionButton = findViewById(R.id.fab)
             fab.setOnClickListener { view ->
                 startActivity(Intent(this, NoteActivity::class.java))
             }
@@ -55,17 +67,23 @@ class ItemsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
         }
 
     private fun displayNotes() {
-        listItems.layoutManager = mLinearLayoutManager
-        listItems.adapter = mNoteRecyclerAdapter
+        listItems.layoutManager = noteLayoutManager
+        listItems.adapter = noteRecyclerAdapter
         nav_view.menu.findItem(R.id.nav_notes).isEnabled=true
     }
     
     private fun displayCourses(){
-        listItems.layoutManager = mGridLayoutManager
+        listItems.layoutManager = courseLayoutManager
         listItems.adapter = mCourseRecyclerAdapter
         nav_view.menu.findItem(R.id.nav_courses).isEnabled=true
     }
 
+    private fun displayRecentlyViewedNotes() {
+        listItems.layoutManager = noteLayoutManager
+        listItems.adapter = recentlyViewedNoteRecyclerAdapter
+
+        nav_view.menu.findItem(R.id.nav_recent_notes).isChecked = true
+    }
     override fun onResume() {
             super.onResume()
             listItems.adapter?.notifyDataSetChanged()
@@ -102,22 +120,42 @@ class ItemsActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelect
                 R.id.nav_courses -> {
                     displayCourses()
                 }
+            R.id.nav_recent_notes -> {
+                displayRecentlyViewedNotes()
+            }
                 R.id.nav_share -> {
                     handleSelection(R.string.nav_share_message)
                 }
                 R.id.nav_send -> {
                     handleSelection(R.string.nav_send_message)
                 }
-                R.id.nav_how_many->{
-                    val message = getString(R.string.nav_how_many_massage_format,
-                    DataManager.notes.size, DataManager.courses.size)
-                    Snackbar.make(listItems, message, Snackbar.LENGTH_LONG).show()
-                }
+        }
 
-            }
             drawer_layout.closeDrawer(GravityCompat.START)
             return true
+    }
+    override fun onNoteSelected(note: NoteInfo) {
+        addToRecentlyViewedNotes(note)
+    }
+
+
+    fun addToRecentlyViewedNotes(note: NoteInfo) {
+        // Check if selection is already in the list
+        val existingIndex = recentlyViewedNotes.indexOf(note)
+        if (existingIndex == -1) {
+            // it isn't in the list...
+            // Add new one to beginning of list and remove any beyond max we want to keep
+            recentlyViewedNotes.add(0, note)
+            for (index in recentlyViewedNotes.lastIndex downTo maxRecentlyViewedNotes)
+                recentlyViewedNotes.removeAt(index)
+        } else {
+            // it is in the list...
+            // Shift the ones above down the list and make it first member of the list
+            for (index in (existingIndex - 1) downTo 0)
+                recentlyViewedNotes[index + 1] = recentlyViewedNotes[index]
+            recentlyViewedNotes[0] = note
         }
+    }
 
         private fun handleSelection(stringId: Int) {
             Snackbar.make(listItems, stringId, Snackbar.LENGTH_LONG).show()

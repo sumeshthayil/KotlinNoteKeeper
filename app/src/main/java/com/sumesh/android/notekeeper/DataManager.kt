@@ -3,15 +3,49 @@ package com.sumesh.android.notekeeper
 object DataManager {
 
     val courses = HashMap<String, CourseInfo>()
-    val notes = ArrayList<NoteInfo>()
+    private val notes = ArrayList<NoteInfo>()
 
     init {
         initializeCourses()
         initializeNotes()
     }
 
+    fun loadNotes(): List<NoteInfo> {
+        simulateLoadDelay()
+        return notes
+    }
+
+    fun loadNotes(vararg noteIds: Int): List<NoteInfo> {
+        simulateLoadDelay()
+        val noteList: List<NoteInfo>
+
+        if(noteIds.isEmpty())
+            noteList = notes
+        else {
+            noteList = ArrayList<NoteInfo>(noteIds.size)
+            for(noteId in noteIds)
+                noteList.add(notes[noteId])
+        }
+        return noteList
+    }
+
+    fun loadNote(noteId: Int) = notes[noteId]
+
+    fun isLastNoteId(noteId: Int) = noteId == notes.lastIndex
+
+    fun idOfNote(note: NoteInfo) = notes.indexOf(note)
+
+    fun noteIdsAsIntArray(notes: List<NoteInfo>): IntArray {
+        val noteIds = IntArray(notes.size)
+        for(index in 0..notes.lastIndex)
+            noteIds[index] = DataManager.idOfNote(notes[index])
+        return noteIds
+    }
     fun addNote(course: CourseInfo, noteTitle: String, noteText: String): Int {
-        val note = NoteInfo(course, noteTitle, noteText)
+        return addNote(NoteInfo(course, noteTitle, noteText))
+    }
+
+    fun addNote(note: NoteInfo): Int{
         notes.add(note)
         return notes.lastIndex
     }
@@ -23,6 +57,10 @@ object DataManager {
                     noteText == note.text)
                 return note
         return null
+    }
+
+    private fun simulateLoadDelay() {
+        Thread.sleep(1000)
     }
 
     fun initializeCourses() {
