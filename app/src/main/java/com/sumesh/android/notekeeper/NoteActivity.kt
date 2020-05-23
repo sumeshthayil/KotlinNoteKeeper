@@ -15,6 +15,10 @@ class NoteActivity : AppCompatActivity() {
     private val tag = this::class.simpleName
     private var notePosition = POSITION_NOT_SET
 
+    val locManager = PseudoLocationManager(this) {lat, lon ->
+        Log.d(tag, "Location callback Lat:$lat Lon:$lon")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -36,6 +40,16 @@ class NoteActivity : AppCompatActivity() {
             createNewNote()
         }
         Log.d(tag,"onCreate" )
+    }
+
+    override fun onStart() {
+        super.onStart()
+        locManager.start()
+    }
+
+    override fun onStop() {
+        locManager.stop()
+        super.onStop()
     }
 
     private fun createNewNote() {
@@ -66,6 +80,10 @@ class NoteActivity : AppCompatActivity() {
                 } else {
                     moveNext()
                 }
+                true
+            }
+            R.id.action_get_together -> {
+
                 true
             }
             else -> super.onOptionsItemSelected(item)
