@@ -10,6 +10,7 @@ import com.google.android.material.navigation.NavigationView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
+import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -22,8 +23,7 @@ class ItemsActivity : AppCompatActivity(),
         NavigationView.OnNavigationItemSelectedListener,
         NoteRecyclerAdapter.OnNoteSelectedListener {
 
-    private val maxRecentlyViewedNotes = 5
-    val recentlyViewedNotes = ArrayList<NoteInfo>(maxRecentlyViewedNotes)
+
 
     private val noteLayoutManager by lazy {
         LinearLayoutManager(this)
@@ -43,9 +43,13 @@ class ItemsActivity : AppCompatActivity(),
     }
     
     private val recentlyViewedNoteRecyclerAdapter by lazy {
-        val adapter = NoteRecyclerAdapter(this, recentlyViewedNotes)
+        val adapter = NoteRecyclerAdapter(this, itemsActivityViewModel.recentlyViewedNotes)
         adapter.setOnSelectedListener(this)
         adapter
+    }
+
+    private val itemsActivityViewModel by lazy {
+        ViewModelProviders.of(this)[ItemsActivityViewModel::class.java]
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,7 +61,11 @@ class ItemsActivity : AppCompatActivity(),
                 startActivity(Intent(this, NoteActivity::class.java))
             }
 
-        displayNotes()
+        if(itemsActivityViewModel.isNewlyCreated && savedInstanceState!=null){
+            itemsActivityViewModel.restoreState(savedInstanceState)
+        itemsActivityViewModel.isNewlyCreated = false
+        }
+        handleDisplaySelection(itemsActivityViewModel.navDrawerDisplaySelection)
         val toggle = ActionBarDrawerToggle(
                 this, drawer_layout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close)
             drawer_layout.addDrawerListener(toggle)
@@ -65,6 +73,12 @@ class ItemsActivity : AppCompatActivity(),
 
             nav_view.setNavigationItemSelectedListener(this)
         }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        itemsActivityViewModel.saveState(outState)
+
+    }
 
     private fun displayNotes() {
         listItems.layoutManager = noteLayoutManager
@@ -114,15 +128,12 @@ class ItemsActivity : AppCompatActivity(),
         override fun onNavigationItemSelected(item: MenuItem): Boolean {
             // Handle navigation view item clicks here.
             when (item.itemId) {
-                R.id.nav_notes -> {
-                    displayNotes()
+                R.id.nav_notes,
+                R.id.nav_courses,
+                R.id.nav_recent_notes-> {
+                    handleDisplaySelection(item.itemId)
+                    itemsActivityViewModel.navDrawerDisplaySelection = item.itemId
                 }
-                R.id.nav_courses -> {
-                    displayCourses()
-                }
-            R.id.nav_recent_notes -> {
-                displayRecentlyViewedNotes()
-            }
                 R.id.nav_share -> {
                     handleSelection(R.string.nav_share_message)
                 }
@@ -134,28 +145,27 @@ class ItemsActivity : AppCompatActivity(),
             drawer_layout.closeDrawer(GravityCompat.START)
             return true
     }
-    override fun onNoteSelected(note: NoteInfo) {
-        addToRecentlyViewedNotes(note)
-    }
 
-
-    fun addToRecentlyViewedNotes(note: NoteInfo) {
-        // Check if selection is already in the list
-        val existingIndex = recentlyViewedNotes.indexOf(note)
-        if (existingIndex == -1) {
-            // it isn't in the list...
-            // Add new one to beginning of list and remove any beyond max we want to keep
-            recentlyViewedNotes.add(0, note)
-            for (index in recentlyViewedNotes.lastIndex downTo maxRecentlyViewedNotes)
-                recentlyViewedNotes.removeAt(index)
-        } else {
-            // it is in the list...
-            // Shift the ones above down the list and make it first member of the list
-            for (index in (existingIndex - 1) downTo 0)
-                recentlyViewedNotes[index + 1] = recentlyViewedNotes[index]
-            recentlyViewedNotes[0] = note
+    fun handleDisplaySelection(itemId:Int) {
+        when (itemId) {
+            R.id.nav_notes -> {
+                displayNotes()
+            }
+            R.id.nav_courses -> {
+                displayCourses()
+            }
+            R.id.nav_recent_notes -> {
+                displayRecentlyViewedNotes()
+            }
         }
     }
+
+    override fun onNoteSelected(note: NoteInfo) {
+        itemsActivityViewModel.addToRecentlyViewedNotes(note)
+    }
+
+
+
 
         private fun handleSelection(stringId: Int) {
             Snackbar.make(listItems, stringId, Snackbar.LENGTH_LONG).show()
