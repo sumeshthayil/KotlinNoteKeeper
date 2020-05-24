@@ -21,13 +21,33 @@ class NoteGetTogetherHelper (private val context: Context, val lifecycle: Lifecy
         Log.d(tag, "Location callback Lat:$lat Lon: $lon")
     }
 
+    val msgManager = PseudoMessagingManager(context)
+    var msgConnection: PseudoMessagingConnection? = null
+
+    fun sendMessage(note: NoteInfo){
+        val getTogetherMessage = "$currentLat|$currentLon|${note.title}|${note.course?.title}"
+        msgConnection?.send(getTogetherMessage)
+    }
+
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
     fun startHandler(){
+        Log.d(tag, "Start Handler")
         locManager.start()
+
+        msgManager.connect { connection->
+            Log.d(tag, "Connection callback. Lifecycle State: ${lifecycle.currentState}")
+            if(lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED))
+                msgConnection = connection
+            else
+                msgConnection?.disconnect()
+        }
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun stopHandler(){
+        Log.d(tag, "Stop Handler")
         locManager.stop()
+
+        msgConnection?.disconnect()
     }
 }
